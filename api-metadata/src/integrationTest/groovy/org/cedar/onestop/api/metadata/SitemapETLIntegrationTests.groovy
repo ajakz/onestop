@@ -1,13 +1,10 @@
 package org.cedar.onestop.api.metadata
 
-
 import org.cedar.onestop.api.metadata.service.ETLService
 import org.cedar.onestop.api.metadata.service.ElasticsearchService
 import org.cedar.onestop.api.metadata.service.MetadataManagementService
 import org.cedar.onestop.api.metadata.service.SitemapETLService
-import org.elasticsearch.client.RestClient
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import spock.lang.Unroll
 
 @Unroll
@@ -25,34 +22,7 @@ class SitemapETLIntegrationTests extends IntegrationTest {
   @Autowired
   private SitemapETLService sitemapEtlService
 
-  @Value('${elasticsearch.index.prefix:}${elasticsearch.index.search.collection.name}')
-  String COLLECTION_SEARCH_INDEX
-
-  @Value('${elasticsearch.index.prefix:}${elasticsearch.index.staging.collection.name}')
-  String COLLECTION_STAGING_INDEX
-
-  @Value('${elasticsearch.index.prefix:}${elasticsearch.index.search.granule.name}')
-  String GRANULE_SEARCH_INDEX
-
-  @Value('${elasticsearch.index.prefix:}${elasticsearch.index.staging.granule.name}')
-  String GRANULE_STAGING_INDEX
-
-  @Value('${elasticsearch.index.prefix:}${elasticsearch.index.search.flattened-granule.name}')
-  private String FLAT_GRANULE_SEARCH_INDEX
-
-  @Value('${elasticsearch.index.prefix:}${elasticsearch.index.sitemap.name}')
-  String SITEMAP_INDEX
-
-  @Value('${elasticsearch.index.prefix:}')
-  String PREFIX
-
-  @Value('${elasticsearch.index.universal-type}')
-  private String TYPE
-
   private final String COLLECTION_TYPE = 'collection'
-
-  @Autowired
-  RestClient restClient
 
   void setup() {
     elasticsearchService.dropSearchIndices()
@@ -71,7 +41,7 @@ class SitemapETLIntegrationTests extends IntegrationTest {
     refreshIndices()
 
     then:
-    def indexedCols = documentsByType(COLLECTION_SEARCH_INDEX, GRANULE_SEARCH_INDEX, FLAT_GRANULE_SEARCH_INDEX)
+    def indexedCols = documentsByType(COLLECTION_SEARCH_INDEX, GRANULE_SEARCH_INDEX, FLATTENED_GRANULE_SEARCH_INDEX)
     def collections = indexedCols[COLLECTION_TYPE]
     collections.size == 2
     def indexed = searchSitemap()

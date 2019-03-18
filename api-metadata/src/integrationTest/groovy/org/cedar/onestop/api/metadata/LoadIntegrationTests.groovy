@@ -2,7 +2,6 @@ package org.cedar.onestop.api.metadata
 
 
 import org.cedar.onestop.api.metadata.service.ElasticsearchService
-import org.elasticsearch.client.RestClient
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.server.LocalServerPort
@@ -32,9 +31,6 @@ class LoadIntegrationTests extends IntegrationTest {
 
   @Value('${server.servlet.context-path}')
   private String contextPath
-
-  @Autowired
-  RestClient restClient
 
   @Autowired
   ElasticsearchService elasticsearchService

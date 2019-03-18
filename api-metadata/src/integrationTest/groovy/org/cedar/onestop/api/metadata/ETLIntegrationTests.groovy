@@ -4,9 +4,7 @@ package org.cedar.onestop.api.metadata
 import org.cedar.onestop.api.metadata.service.ETLService
 import org.cedar.onestop.api.metadata.service.ElasticsearchService
 import org.cedar.onestop.api.metadata.service.MetadataManagementService
-import org.elasticsearch.client.RestClient
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import spock.lang.Unroll
 
 @Unroll
@@ -21,33 +19,9 @@ class ETLIntegrationTests extends IntegrationTest {
   @Autowired
   private ETLService etlService
 
-  @Value('${elasticsearch.index.prefix:}${elasticsearch.index.search.collection.name}')
-  String COLLECTION_SEARCH_INDEX
-
-  @Value('${elasticsearch.index.prefix:}${elasticsearch.index.staging.collection.name}')
-  String COLLECTION_STAGING_INDEX
-
-  @Value('${elasticsearch.index.prefix:}${elasticsearch.index.search.granule.name}')
-  String GRANULE_SEARCH_INDEX
-
-  @Value('${elasticsearch.index.prefix:}${elasticsearch.index.staging.granule.name}')
-  String GRANULE_STAGING_INDEX
-
-  @Value('${elasticsearch.index.prefix:}${elasticsearch.index.search.flattened-granule.name}')
-  private String FLAT_GRANULE_SEARCH_INDEX
-
-  @Value('${elasticsearch.index.prefix:}')
-  String PREFIX
-
-  @Value('${elasticsearch.index.universal-type}')
-  private String TYPE
-
   private final String COLLECTION_TYPE = 'collection'
   private final String GRANULE_TYPE = 'granule'
   private final String FLAT_GRANULE_TYPE = 'flattenedGranule'
-
-  @Autowired
-  RestClient restClient
 
   void setup() {
     elasticsearchService.performRequest("PUT", "_cluster/settings", ['transient': ['script.max_compilations_per_minute': 200]])
@@ -63,7 +37,7 @@ class ETLIntegrationTests extends IntegrationTest {
     noExceptionThrown()
 
     and:
-    documentsByType(COLLECTION_SEARCH_INDEX, GRANULE_SEARCH_INDEX, FLAT_GRANULE_SEARCH_INDEX).every({it.size() == 0})
+    documentsByType(COLLECTION_SEARCH_INDEX, GRANULE_SEARCH_INDEX, FLATTENED_GRANULE_SEARCH_INDEX).every({it.size() == 0})
   }
 
   def 'updating a new collection indexes only a collection'() {
@@ -74,7 +48,7 @@ class ETLIntegrationTests extends IntegrationTest {
     etlService.updateSearchIndices()
 
     then:
-    def indexed = documentsByType(COLLECTION_SEARCH_INDEX, GRANULE_SEARCH_INDEX, FLAT_GRANULE_SEARCH_INDEX)
+    def indexed = documentsByType(COLLECTION_SEARCH_INDEX, GRANULE_SEARCH_INDEX, FLATTENED_GRANULE_SEARCH_INDEX)
     def collection = indexed[COLLECTION_TYPE][0]
     collection._source.fileIdentifier == 'gov.noaa.nodc:NDBC-COOPS'
 
@@ -184,7 +158,7 @@ class ETLIntegrationTests extends IntegrationTest {
     noExceptionThrown()
 
     and:
-    documentsByType(COLLECTION_SEARCH_INDEX, GRANULE_SEARCH_INDEX, FLAT_GRANULE_SEARCH_INDEX).every({it.size() == 0})
+    documentsByType(COLLECTION_SEARCH_INDEX, GRANULE_SEARCH_INDEX, FLATTENED_GRANULE_SEARCH_INDEX).every({it.size() == 0})
   }
 
   def 'rebuilding with an orphan granule indexes nothing'() {
@@ -195,7 +169,7 @@ class ETLIntegrationTests extends IntegrationTest {
     etlService.rebuildSearchIndices()
 
     then:
-    documentsByType(COLLECTION_SEARCH_INDEX, GRANULE_SEARCH_INDEX, FLAT_GRANULE_SEARCH_INDEX).every({it.size() == 0})
+    documentsByType(COLLECTION_SEARCH_INDEX, GRANULE_SEARCH_INDEX, FLATTENED_GRANULE_SEARCH_INDEX).every({it.size() == 0})
   }
 
   def 'rebuilding with a collection and granule indexes a collection, a granule, and a flattened granule'() {
@@ -206,7 +180,7 @@ class ETLIntegrationTests extends IntegrationTest {
     when:
     etlService.rebuildSearchIndices()
     def staged = documentsByType(COLLECTION_STAGING_INDEX, GRANULE_STAGING_INDEX)
-    def indexed = documentsByType(COLLECTION_SEARCH_INDEX, GRANULE_SEARCH_INDEX, FLAT_GRANULE_SEARCH_INDEX)
+    def indexed = documentsByType(COLLECTION_SEARCH_INDEX, GRANULE_SEARCH_INDEX, FLATTENED_GRANULE_SEARCH_INDEX)
 
     then: // one collection and one granule are indexed; one flattened granule is generated
     indexed[COLLECTION_TYPE].size() == 1
@@ -249,7 +223,7 @@ class ETLIntegrationTests extends IntegrationTest {
     when: 'touch the collection'
     insertMetadataFromPath('data/COOPS/C1.xml')
     etlService.rebuildSearchIndices()
-    def indexed = documentsByType(COLLECTION_SEARCH_INDEX, GRANULE_SEARCH_INDEX, FLAT_GRANULE_SEARCH_INDEX)
+    def indexed = documentsByType(COLLECTION_SEARCH_INDEX, GRANULE_SEARCH_INDEX, FLATTENED_GRANULE_SEARCH_INDEX)
 
     then: 'everything has a fresh version in a new index'
     indexed[COLLECTION_TYPE].size() == 2
@@ -281,7 +255,7 @@ class ETLIntegrationTests extends IntegrationTest {
   }
 
   private Map indexedFlatGranuleVersions() {
-    indexedItemVersions(FLAT_GRANULE_SEARCH_INDEX)
+    indexedItemVersions(FLATTENED_GRANULE_SEARCH_INDEX)
   }
 
   private Map documentsByType(String collectionIndex, String granuleIndex, String flatGranuleIndex = null) {
