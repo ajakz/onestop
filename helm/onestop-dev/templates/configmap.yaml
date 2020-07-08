@@ -1,0 +1,22 @@
+{{- if .Values.config }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+spec:
+  template:
+    spec:
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Release.Name }}-configmap
+      containers:
+          - name: ...
+            volumeMounts:
+              - name: config
+                mountPath: /data/templates
+
+data:
+  custom-samples.json: {{ .Files.Get "custom-samples.json" | indent 4 }}
+{{- end }}
