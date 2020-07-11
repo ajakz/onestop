@@ -338,6 +338,8 @@ spec:
               mountPath: /mnt/kibana/tls.crt
               readOnly: true
               subPath: tls.crt
+            - name: dashboards-config
+              mountPath: /data/templates
       volumes:
         - name: config
           configMap:
@@ -353,6 +355,9 @@ spec:
         - name: kb-certs
           secret:
             secretName: onestop-kb-http-certs-public
+        - name: dashboards-config
+          configMap:
+            name: dashboards-configmap
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
