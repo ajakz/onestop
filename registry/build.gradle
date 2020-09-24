@@ -16,6 +16,8 @@ configurations {
 dependencies {
   def Versions = project.Versions
 
+  implementation(project(':data-common'))
+
   implementation("org.codehaus.groovy:groovy:${Versions.GROOVY}")
   implementation("org.codehaus.groovy:groovy-json:${Versions.GROOVY}")
   implementation("org.springframework.boot:spring-boot-starter-web")
@@ -38,9 +40,7 @@ dependencies {
   schemaDefinitions ("com.github.cedardevs.schemas:schemas-core:${Versions.ONESTOP_SCHEMAS}")
 
   compileOnly("org.springframework.boot:spring-boot-starter-tomcat")
-
-  runtime("org.springframework.boot:spring-boot-devtools")
-  
+  compileOnly("org.springframework.boot:spring-boot-devtools")
 
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.spockframework:spock-spring:${Versions.SPOCK}")
